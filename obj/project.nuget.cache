@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dgSpecHash": "Fvs32fAGdLBdH0SBKnCZdwxG5YxJoZ/ykFjmL7Ja2jKEyndtI4zXV7kO6SHK0gYMJVVSEwkDHdGlkhrDO9vsOw==",
+  "success": true,
+  "projectFilePath": "/Users/nurariaz/Docs/WebBrowser/WebBrowser.csproj",
+  "expectedPackageFiles": [
+    "/Users/nurariaz/.nuget/packages/atksharp/3.24.24.95/atksharp.3.24.24.95.nupkg.sha512",
+    "/Users/nurariaz/.nuget/packages/cairosharp/3.24.24.95/cairosharp.3.24.24.95.nupkg.sha512",
+    "/Users/nurariaz/.nuget/packages/gdksharp/3.24.24.95/gdksharp.3.24.24.95.nupkg.sha512",
+    "/Users/nurariaz/.nuget/packages/giosharp/3.24.24.95/giosharp.3.24.24.95.nupkg.sha512",
+    "/Users/nurariaz/.nuget/packages/glibsharp/3.24.24.95/glibsharp.3.24.24.95.nupkg.sha512",
+    "/Users/nurariaz/.nuget/packages/gtksharp/3.24.24.95/gtksharp.3.24.24.95.nupkg.sha512",
+    "/Users/nurariaz/.nuget/packages/pangosharp/3.24.24.95/pangosharp.3.24.24.95.nupkg.sha512"
+  ],
+  "logs": []
+}
