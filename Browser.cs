@@ -12,6 +12,7 @@ namespace SimpleBrowser
         private History browserHistory = new();
         private ListStore historyStore = new(typeof(string));
         private const string DefaultHomePage = "https://www.hw.ac.uk/dubai/";
+        private const string HomePageFilePath = "homePage.txt";
 
         [UI] private readonly Button? backButton = null;
         [UI] private readonly Button? nextButton = null;
@@ -43,12 +44,13 @@ namespace SimpleBrowser
             UpdateNavigationButtonsState();
             historyScrolledWindow.Hide();
             browserHistory.LoadHistory();
+            _homePageURL = LoadHomePageUrlFromFile();
         }
 
         private Browser(Builder builder) : base(builder.GetObject("MainWindow").Handle)
         {
             builder.Autoconnect(this);
-            
+
             InitializeComponents(builder);
             AttachEvents();
             CheckDefaultUrl();
@@ -102,6 +104,13 @@ namespace SimpleBrowser
         }
         private void CheckDefaultUrl()
         {
+            if (File.Exists(HomePageFilePath))
+            {
+                string defaultUrl = File.ReadAllText(HomePageFilePath).Trim();
+                addressEntry.Text = defaultUrl;
+                LoadUrl(addressEntry.Text);
+
+            }
             if (string.IsNullOrEmpty(addressEntry?.Text))
             {
                 if (addressEntry != null)
@@ -160,7 +169,7 @@ namespace SimpleBrowser
             historyStore.Clear();  // Clear previous entries
             foreach (var url in loadedHistory)
             {
-                Console.WriteLine("From history page"+url);
+                Console.WriteLine("From history page" + url);
                 historyStore.AppendValues(url);
             }
             bool showHistory = !historyScrolledWindow.Visible;
@@ -256,7 +265,7 @@ namespace SimpleBrowser
             historyScrolledWindow.Visible = false;
             if (addressEntry != null)
             {
-                addressEntry.Text = HomePageURL;
+                addressEntry.Text = _homePageURL;
                 LoadUrl(addressEntry.Text);
             }
 
@@ -352,6 +361,19 @@ namespace SimpleBrowser
             }
 
         }
+        private void SaveHomePageUrlToFile(string url)
+        {
+            File.WriteAllText(HomePageFilePath, url);
+        }
+
+        private string LoadHomePageUrlFromFile()
+        {
+            if (File.Exists(HomePageFilePath))
+            {
+                return File.ReadAllText(HomePageFilePath).Trim();
+            }
+            return DefaultHomePage;
+        }
 
         private void OnOkayButtonClicked(object? sender, EventArgs e)
         {
@@ -361,6 +383,7 @@ namespace SimpleBrowser
                 if (HtmlUtility.IsValidUrl(enteredurl))
                 {
                     _homePageURL = enteredurl;
+                    SaveHomePageUrlToFile(enteredurl);
                     if (editHomePageDialog != null)
                     {
                         editHomePageDialog.Hide();

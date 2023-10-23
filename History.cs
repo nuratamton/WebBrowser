@@ -127,7 +127,6 @@ namespace BrowserHistory
             {
                 Console.WriteLine("Failed to save history. Error:" + ex.Message);
             }
-
         }
 
         public void LoadHistory()
@@ -148,7 +147,6 @@ namespace BrowserHistory
             {
                 Console.WriteLine("Failed to load history. Error:" + ex.Message);
             }
-
         }
     }
 }
