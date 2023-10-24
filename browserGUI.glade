@@ -216,12 +216,21 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem">
+                      <object class="GtkImageMenuItem" id="historyMenuItem">
                         <property name="label">History</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="use-stock">False</property>
                         <signal name="activate" handler="DisplayHistoryList" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="favouriteMenuItem">
+                        <property name="label">History</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="use-stock">False</property>
+                        <signal name="activate" handler="DisplayFavouriteList" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -329,7 +338,6 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="padding">8</property>
                 <property name="position">2</property>
               </packing>
             </child>
@@ -354,6 +362,25 @@
               </packing>
             </child>
             <child>
+              <object class="GtkButton" id="favouriteButton">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <child>
+                  <object class="GtkImage" id="favouriteIcon">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">emblem-favorite-symbolic</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkButton" id="homeButton">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -370,7 +397,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">4</property>
+                <property name="position">5</property>
               </packing>
             </child>
           </object>
@@ -445,7 +472,7 @@
                 <property name="can-focus">True</property>
                 <property name="shadow-type">in</property>
                 <child>
-                  <object class="GtkTreeView">
+                  <object class="GtkTreeView" id="favouriteTreeView">
                     <property name="name">favouriteTreeView</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>

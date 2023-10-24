@@ -2,6 +2,7 @@
 using Utility;
 using Network;
 using BrowserHistory;
+using favourites;
 using UI = Gtk.Builder.ObjectAttribute;
 
 namespace SimpleBrowser
@@ -10,7 +11,9 @@ namespace SimpleBrowser
     class Browser : Window
     {
         private History browserHistory = new();
+        // public Favourite favourites = new();
         private ListStore historyStore = new(typeof(string));
+        private ListStore favouriteStore = new(typeof(string), typeof(string));
         private const string DefaultHomePage = "https://www.hw.ac.uk/dubai/";
         private const string HomePageFilePath = "homePage.txt";
 
@@ -22,7 +25,7 @@ namespace SimpleBrowser
         [UI] private readonly TextView? contentTextView = null;
         [UI] private readonly Label? responseLabel = null;
         [UI] private readonly TreeView? historyTreeView = null;
-        // [UI] private readonly Notebook? browserNotebook = null;
+        [UI] private readonly TreeView? favouriteTreeView = null;
 
         private Dialog? editHomePageDialog;
         private Entry? urlEntry;
@@ -43,7 +46,7 @@ namespace SimpleBrowser
 
         public Browser() : this(new Builder("WebBrowser.browserGUI.glade"))
         {
-            
+
             UpdateNavigationButtonsState();
             browserHistory.LoadHistory();
             _homePageURL = LoadHomePageUrlFromFile();
@@ -73,6 +76,7 @@ namespace SimpleBrowser
             browserNotebook = (Notebook)builder.GetObject("notebook");
             historyScrolledWindow.Add(historyTreeView);
             InitializeHistoryTreeView();
+            InitializeFavouriteTreeView(); 
             // historyScrolledWindow.Hide();
         }
         private void AttachEvents()
@@ -152,7 +156,7 @@ namespace SimpleBrowser
                 // Create a column for the URL
                 TreeViewColumn urlColumn = new TreeViewColumn { Title = "History" };
 
-                // Create a renderer for the column data (text in this case)
+                // Create a renderer for the column data
                 CellRendererText urlCell = new CellRendererText();
 
                 // Add the cell renderer to the column and bind the data
@@ -162,6 +166,24 @@ namespace SimpleBrowser
                 // Add the column to the TreeView
                 historyTreeView.AppendColumn(urlColumn);
             }
+        }
+         private void InitializeFavouriteTreeView()
+        {
+     
+       
+            favouriteTreeView.Model = favouriteStore;
+
+            TreeViewColumn nameColumn = new TreeViewColumn { Title = "Name" };
+            CellRendererText nameCell = new CellRendererText();
+            nameColumn.PackStart(nameCell, true);
+            nameColumn.AddAttribute(nameCell, "text", 0);
+            favouriteTreeView.AppendColumn(nameColumn);
+
+            TreeViewColumn urlColumn = new TreeViewColumn { Title = "URL" };
+            CellRendererText urlCell = new CellRendererText();
+            urlColumn.PackStart(urlCell, true);
+            urlColumn.AddAttribute(urlCell, "text", 1);
+            favouriteTreeView.AppendColumn(urlColumn);
         }
 
         private void DisplayHistoryList(object sender, EventArgs e)
@@ -180,6 +202,23 @@ namespace SimpleBrowser
                 browserNotebook.CurrentPage = currentPage == 0 ? 1 : 0;
             }
         }
+        private void DisplayFavouriteList(object sender, EventArgs e)
+        {
+            FavouriteManager favouriteManager = new FavouriteManager();
+            List<Favourite> loadedFavorites = favouriteManager.DisplayFavourites();
+            favouriteStore.Clear();
+            foreach (var fav in loadedFavorites)
+            {
+                Console.WriteLine("From favorites page" + fav.URL);
+                favouriteStore.AppendValues(fav.Name, fav.URL); // Append both name and URL, adjust as needed
+            }
+
+            if (browserNotebook != null)
+            {
+                int currentPage = browserNotebook.CurrentPage;
+                browserNotebook.CurrentPage = currentPage == 0 ? 2 : 0;  // Adjust page index as needed
+            }
+        }
         private void HistoryTreeView_RowActivated(object sender, RowActivatedArgs args)
         {
             TreeIter iter;
@@ -193,6 +232,8 @@ namespace SimpleBrowser
                 }
             }
         }
+
+
 
         private void BackButton_clicked(object sender, EventArgs e)
         {
