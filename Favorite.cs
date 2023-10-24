@@ -1,7 +1,5 @@
-using System;
-
 using System.Text.Json;
-using Gtk;
+using System.Linq;
 
 namespace favourites
 {
@@ -14,10 +12,8 @@ namespace favourites
         { }
     }
 
-
     class FavouriteStorage
     {
-
         private const string favoriteFile = "favourites.json";
 
         public void SaveFavorites(List<Favourite> favouriteList)
@@ -37,6 +33,7 @@ namespace favourites
             // DisplayFavourites();
         }
     }
+
     class FavouriteManager
     {
         private List<Favourite> favouriteList = new List<Favourite>();
@@ -46,6 +43,7 @@ namespace favourites
             storage = new FavouriteStorage();
             favouriteList = storage.LoadFavorites();
         }
+
         public List<Favourite> DisplayFavourites()
         {
             return favouriteList;
@@ -57,23 +55,18 @@ namespace favourites
         }
         public void RemoveFavourite(Favourite item)
         {
-            favouriteList.Remove(item);
+            favouriteList.RemoveAll(fav => fav.Name == item.Name && fav.URL == item.URL);
             storage.SaveFavorites(favouriteList);
         }
         public void ModifyFavourite(string name, string url, Favourite item)
         {
-            if (favouriteList.Contains(item))
+            var favItemIndex = favouriteList.FindIndex(fav => fav.Name == item.Name && fav.URL == item.URL);
+            if (favItemIndex != -1)
             {
-                item.Name = name;
-                item.URL = url;
+                favouriteList[favItemIndex].Name = name;
+                favouriteList[favItemIndex].URL = url;
                 storage.SaveFavorites(favouriteList);
             }
         }
-       
-
     }
-
-
-
-
 }

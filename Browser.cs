@@ -10,12 +10,14 @@ namespace SimpleBrowser
 
     class Browser : Window
     {
-        private History browserHistory = new();
-        // public Favourite favourites = new();
-        private ListStore historyStore = new(typeof(string));
-        private ListStore favouriteStore = new(typeof(string), typeof(string));
         private const string DefaultHomePage = "https://www.hw.ac.uk/dubai/";
         private const string HomePageFilePath = "homePage.txt";
+
+        private History browserHistory = new();
+        public FavouriteStorage favouriteStorage = new();
+        public FavouriteManager favouriteManager = new();
+        private readonly ListStore historyStore = new(typeof(string));
+        private readonly ListStore favouriteStore = new(typeof(string), typeof(string), typeof(string), typeof(string));
 
         [UI] private readonly Button? backButton = null;
         [UI] private readonly Button? nextButton = null;
@@ -28,15 +30,19 @@ namespace SimpleBrowser
         [UI] private readonly TreeView? favouriteTreeView = null;
 
         private Dialog? editHomePageDialog;
+        private Dialog? favouriteNameDialog;
+        private Dialog? editFavDialog;
         private Entry? urlEntry;
+        private Entry? favouriteNameEntry;
+        private Entry? editNameEntry;
+        private Entry? editUrlEntry;
         private Button? okayButton;
-        private ScrolledWindow historyScrolledWindow;
-        private ScrolledWindow contentScrolledWindow;
         private Notebook? browserNotebook;
 
         private DateTime lastBackButtonClicked = DateTime.MinValue;
         private DateTime lastNextButtonClicked = DateTime.MinValue;
         private DateTime lastActivated = DateTime.MinValue;
+
         private string _homePageURL = DefaultHomePage;
         private string HomePageURL
         {
@@ -71,13 +77,16 @@ namespace SimpleBrowser
             editHomePageDialog = (Dialog)builder.GetObject("EditHomePage");
             urlEntry = (Entry)builder.GetObject("urlEntry");
             okayButton = (Button)builder.GetObject("OkayButton");
-            historyScrolledWindow = (ScrolledWindow)builder.GetObject("historyScrolledWindow");
-            contentScrolledWindow = (ScrolledWindow)builder.GetObject("scrolledWindow");
+            // historyScrolledWindow = (ScrolledWindow)builder.GetObject("historyScrolledWindow");
+            // contentScrolledWindow = (ScrolledWindow)builder.GetObject("scrolledWindow");
             browserNotebook = (Notebook)builder.GetObject("notebook");
-            historyScrolledWindow.Add(historyTreeView);
+            favouriteNameDialog = (Dialog)builder.GetObject("FavouriteNameDialog");
+            favouriteNameEntry = (Entry)builder.GetObject("nameEntry");
+            editFavDialog = (Dialog)builder.GetObject("EditFavDialog");
+            editNameEntry = (Entry)builder.GetObject("EditNameEntry");
+            editUrlEntry = (Entry)builder.GetObject("EditUrlEntry");
             InitializeHistoryTreeView();
-            InitializeFavouriteTreeView(); 
-            // historyScrolledWindow.Hide();
+            InitializeFavouriteTreeView();
         }
         private void AttachEvents()
         {
@@ -109,6 +118,11 @@ namespace SimpleBrowser
             {
                 historyTreeView.RowActivated += HistoryTreeView_RowActivated;
             }
+            if (favouriteTreeView != null)
+            {
+                favouriteTreeView.RowActivated += FavouriteTreeView_RowActivated;
+            }
+
         }
         private void CheckDefaultUrl()
         {
@@ -147,6 +161,62 @@ namespace SimpleBrowser
             }
         }
 
+        private void InitializeFavouriteTreeView()
+        {
+            if (favouriteTreeView != null)
+            {
+                favouriteTreeView.Model = favouriteStore;
+                TreeViewColumn nameColumn = new() { Title = "Name" };
+                CellRendererText nameCell = new();
+                nameColumn.PackStart(nameCell, true);
+                nameColumn.AddAttribute(nameCell, "text", 0);
+
+                TreeViewColumn urlColumn = new() { Title = "URL" };
+                CellRendererText urlCell = new();
+                urlColumn.PackStart(urlCell, true);
+                urlColumn.AddAttribute(urlCell, "text", 1);
+
+                TreeViewColumn editColumn = new() { Title = "Edit" };
+                CellRendererToggle editButton = new();
+                editButton.Activatable = true; //clickable
+                editButton.Toggled += OnEditClicked;
+                editColumn.PackStart(editButton, false);
+                editColumn.AddAttribute(editButton, "active", 2);
+                // editColumn.Visible = true;
+
+                TreeViewColumn deleteColumn = new() { Title = "Delete" };
+                CellRendererToggle deleteButton = new();
+                deleteButton.Activatable = true; //clickable
+                deleteButton.Toggled += OnDeleteClicked;
+                deleteColumn.AddAttribute(deleteButton, "active", 3);
+                deleteColumn.PackStart(deleteButton, false);
+                deleteColumn.FixedWidth = 50;
+
+                // To adjust UI spacing
+                TreeViewColumn paddingColumn = new TreeViewColumn();
+                paddingColumn.FixedWidth = 20;
+
+                favouriteTreeView.AppendColumn(nameColumn);
+                favouriteTreeView.AppendColumn(urlColumn);
+                favouriteTreeView.AppendColumn(editColumn);
+                favouriteTreeView.AppendColumn(deleteColumn);
+                favouriteTreeView.AppendColumn(paddingColumn);
+            }
+        }
+        private void FavouriteTreeView_RowActivated(object sender, RowActivatedArgs args)
+        {
+            TreeIter iter;
+            if (favouriteStore.GetIter(out iter, args.Path))
+            {
+                string url = (string)favouriteStore.GetValue(iter, 1);
+                if (addressEntry != null)
+                {
+                    addressEntry.Text = url;
+                    LoadUrl(url);
+                }
+            }
+        }
+
         private void InitializeHistoryTreeView()
         {
             if (historyTreeView != null)
@@ -167,30 +237,11 @@ namespace SimpleBrowser
                 historyTreeView.AppendColumn(urlColumn);
             }
         }
-         private void InitializeFavouriteTreeView()
-        {
-     
-       
-            favouriteTreeView.Model = favouriteStore;
-
-            TreeViewColumn nameColumn = new TreeViewColumn { Title = "Name" };
-            CellRendererText nameCell = new CellRendererText();
-            nameColumn.PackStart(nameCell, true);
-            nameColumn.AddAttribute(nameCell, "text", 0);
-            favouriteTreeView.AppendColumn(nameColumn);
-
-            TreeViewColumn urlColumn = new TreeViewColumn { Title = "URL" };
-            CellRendererText urlCell = new CellRendererText();
-            urlColumn.PackStart(urlCell, true);
-            urlColumn.AddAttribute(urlCell, "text", 1);
-            favouriteTreeView.AppendColumn(urlColumn);
-        }
 
         private void DisplayHistoryList(object sender, EventArgs e)
         {
             List<string> loadedHistory = browserHistory.GetAllHistoryUrls();
-            historyScrolledWindow.Opacity = 1.0;
-            historyStore.Clear();  // Clear previous entries
+            historyStore.Clear();
             foreach (var url in loadedHistory)
             {
                 Console.WriteLine("From history page" + url);
@@ -204,19 +255,19 @@ namespace SimpleBrowser
         }
         private void DisplayFavouriteList(object sender, EventArgs e)
         {
-            FavouriteManager favouriteManager = new FavouriteManager();
+            FavouriteManager favouriteManager = new();
             List<Favourite> loadedFavorites = favouriteManager.DisplayFavourites();
             favouriteStore.Clear();
             foreach (var fav in loadedFavorites)
             {
                 Console.WriteLine("From favorites page" + fav.URL);
-                favouriteStore.AppendValues(fav.Name, fav.URL); // Append both name and URL, adjust as needed
+                favouriteStore.AppendValues(fav.Name, fav.URL, false, false);
             }
 
             if (browserNotebook != null)
             {
                 int currentPage = browserNotebook.CurrentPage;
-                browserNotebook.CurrentPage = currentPage == 0 ? 2 : 0;  // Adjust page index as needed
+                browserNotebook.CurrentPage = currentPage == 0 ? 2 : 0;
             }
         }
         private void HistoryTreeView_RowActivated(object sender, RowActivatedArgs args)
@@ -233,7 +284,130 @@ namespace SimpleBrowser
             }
         }
 
+        private string PromptForFavouriteName()
+        {
 
+            // Reset the entry each time it's shown
+            if (favouriteNameEntry != null)
+            {
+                favouriteNameEntry.Text = "";
+            }
+
+            string? favouriteName = null;
+
+            // Show the dialog and check the response
+            if (favouriteNameDialog != null && favouriteNameEntry != null)
+            {
+                if (favouriteNameDialog.Run() == (int)ResponseType.Ok && !string.IsNullOrEmpty(favouriteNameEntry.Text))
+                {
+                    favouriteName = favouriteNameEntry.Text;
+                }
+
+                // Hide the dialog after use
+                favouriteNameDialog.Hide();
+            }
+            if (favouriteName != null)
+            {
+                return favouriteName;
+            }
+            return "";
+
+        }
+
+        private void on_favouriteButton_clicked(object sender, EventArgs e)
+        {
+            Console.WriteLine("Fav button clicked");
+
+            // Check if the addressEntry has a value, if not, just return
+            if (addressEntry == null || string.IsNullOrEmpty(addressEntry.Text))
+            {
+                Console.WriteLine("No URL available to add to favourites.");
+                return;
+            }
+            string favouriteName = PromptForFavouriteName();
+
+            // Create a new favourite item
+            var favouriteItem = new Favourite()
+            {
+                Name = favouriteName,
+                URL = addressEntry.Text
+            };
+
+            // Add to favourites and save
+            favouriteManager.AddFavourite(favouriteItem);
+
+            Console.WriteLine($"Added to favourites: {addressEntry.Text}");
+            Console.WriteLine("Fav button clicked");
+            List<Favourite> favList = favouriteManager.DisplayFavourites();
+            favouriteStorage.SaveFavorites(favList);
+        }
+
+        private (string, string) ShowEditFavDialog(string currentName, string currentURL)
+        {
+            if (editNameEntry == null || editUrlEntry == null || editFavDialog == null)
+            {
+                // Log or notify the user about the missing controls.
+                Console.WriteLine("One or more controls are not initialized.");
+                return (string.Empty, string.Empty);
+            }
+            editNameEntry.Text = currentName;
+            editUrlEntry.Text = currentURL;
+
+            editFavDialog.ShowAll();
+            var response = editFavDialog.Run();
+
+            string newName = editNameEntry.Text.Trim();
+            string newURL = editUrlEntry.Text.Trim();
+
+            editFavDialog.Destroy();
+            if (response == (int)ResponseType.Ok)
+            {
+                return (newName, newURL);
+            }
+            return (string.Empty, string.Empty);
+
+        }
+        private void OnEditClicked(object sender, ToggledArgs args)
+        {
+            // determine which item is treeview is selected
+            TreeIter iter;
+            var selectedRows = favouriteTreeView.Selection.GetSelectedRows();
+            if (selectedRows.Length > 0 && favouriteStore.GetIter(out iter, selectedRows[0]))
+            {
+                // getting name and URL of that item
+                var favName = (string)favouriteStore.GetValue(iter, 0);
+                var favURL = (string)favouriteStore.GetValue(iter, 1);
+                // show dialog with those values as default
+                var (newName, newURL) = ShowEditFavDialog(favName, favURL);
+
+                if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newURL))
+                {
+                    // updating the existing item in file
+                    Favourite existingFav = new Favourite { Name = favName, URL = favURL };
+                    favouriteManager.ModifyFavourite(newName, newURL, existingFav);
+                    // update in treeview
+                    favouriteStore.SetValue(iter, 0, newName);
+                    favouriteStore.SetValue(iter, 1, newURL);
+                }
+            }
+        }
+
+        private void OnDeleteClicked(object sender, ToggledArgs args)
+        {
+            TreeIter iter;
+            if (favouriteStore.GetIter(out iter, new TreePath(args.Path)))
+            {
+                string name = (string)favouriteStore.GetValue(iter, 0);
+                string url = (string)favouriteStore.GetValue(iter, 1);
+                Favourite favToDelete = new Favourite { Name = name, URL = url };
+
+                // Remove it from the favourite manager and update JSON
+                favouriteManager.RemoveFavourite(favToDelete);
+
+                // Remove the entry from the TreeView
+                favouriteStore.Remove(ref iter);
+            }
+        }
 
         private void BackButton_clicked(object sender, EventArgs e)
         {
@@ -378,18 +552,10 @@ namespace SimpleBrowser
                     if (responseLabel != null)
                     {
                         responseLabel.Text = (int)result.StatusCode + " | " + result.ReasonPhrase + "\n" + title;
-                        // responseLabel.Text = (int)result.StatusCode switch
-                        // {
-                        //     200 => "200 | OK - " + title,
-                        //     400 => "400 | Bad Request",
-                        //     403 => "403 | Forbidden",
-                        //     404 => "404 | Not Found",
-                        //     _ => (int)result.StatusCode + "|" + result.ReasonPhrase,
-                        // };
                     }
 
                     browserHistory.Visit(url);
-                    UpdateNavigationButtonsState();  // Update navigation buttons state after a new URL is visited
+                    UpdateNavigationButtonsState();
                 }
             }
             else
@@ -400,7 +566,6 @@ namespace SimpleBrowser
                 }
 
             }
-
         }
 
         public void ShowEditHomePageDialog(object sender, EventArgs e)
@@ -410,7 +575,6 @@ namespace SimpleBrowser
                 editHomePageDialog.Run();
                 editHomePageDialog.Hide();
             }
-
         }
         private void SaveHomePageUrlToFile(string url)
         {

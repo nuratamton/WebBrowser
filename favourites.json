@@ -1,18 +1,1 @@
-[
-    {
-        "Name": "Google",
-        "URL": "https://www.google.com"
-    },
-    {
-        "Name": "OpenAI",
-        "URL": "https://www.openai.com"
-    },
-    {
-        "Name": "Wikipedia",
-        "URL": "https://www.wikipedia.org"
-    },
-    {
-        "Name": "GitHub",
-        "URL": "https://www.github.com"
-    }
-]
+[{"Name":"Wikiii","URL":"https://www.wikipedia.org"},{"Name":"Insta","URL":"https://www.instagram.com"}]

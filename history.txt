@@ -1,4 +1,8 @@
 https://www.google.com
 https://www.instagram.com
+https://www.openai.com
+https://www.github.com
+https://www.wikipedia.org
+https://www.hw.ac.uk
 https://www.canvas.com
 https://www.facebook.com
