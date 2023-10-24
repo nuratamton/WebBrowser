@@ -22,12 +22,14 @@ namespace SimpleBrowser
         [UI] private readonly TextView? contentTextView = null;
         [UI] private readonly Label? responseLabel = null;
         [UI] private readonly TreeView? historyTreeView = null;
+        // [UI] private readonly Notebook? browserNotebook = null;
 
         private Dialog? editHomePageDialog;
         private Entry? urlEntry;
         private Button? okayButton;
         private ScrolledWindow historyScrolledWindow;
         private ScrolledWindow contentScrolledWindow;
+        private Notebook? browserNotebook;
 
         private DateTime lastBackButtonClicked = DateTime.MinValue;
         private DateTime lastNextButtonClicked = DateTime.MinValue;
@@ -41,10 +43,14 @@ namespace SimpleBrowser
 
         public Browser() : this(new Builder("WebBrowser.browserGUI.glade"))
         {
+            
             UpdateNavigationButtonsState();
-            historyScrolledWindow.Hide();
             browserHistory.LoadHistory();
             _homePageURL = LoadHomePageUrlFromFile();
+            if (browserNotebook != null)
+            {
+                browserNotebook.CurrentPage = 0;
+            }
         }
 
         private Browser(Builder builder) : base(builder.GetObject("MainWindow").Handle)
@@ -55,9 +61,6 @@ namespace SimpleBrowser
             AttachEvents();
             CheckDefaultUrl();
             DeleteEvent += Window_DeleteEvent;
-
-            Console.WriteLine($"contentScrolledWindow visibility: {contentScrolledWindow.Visible}");
-            Console.WriteLine($"historyScrolledWindow visibility: {historyScrolledWindow.Visible}");
         }
 
         private void InitializeComponents(Builder builder)
@@ -67,9 +70,10 @@ namespace SimpleBrowser
             okayButton = (Button)builder.GetObject("OkayButton");
             historyScrolledWindow = (ScrolledWindow)builder.GetObject("historyScrolledWindow");
             contentScrolledWindow = (ScrolledWindow)builder.GetObject("scrolledWindow");
+            browserNotebook = (Notebook)builder.GetObject("notebook");
             historyScrolledWindow.Add(historyTreeView);
-            InitializeTreeView();
-            historyScrolledWindow.Hide();
+            InitializeHistoryTreeView();
+            // historyScrolledWindow.Hide();
         }
         private void AttachEvents()
         {
@@ -107,9 +111,11 @@ namespace SimpleBrowser
             if (File.Exists(HomePageFilePath))
             {
                 string defaultUrl = File.ReadAllText(HomePageFilePath).Trim();
-                addressEntry.Text = defaultUrl;
-                LoadUrl(addressEntry.Text);
-
+                if (addressEntry != null)
+                {
+                    addressEntry.Text = defaultUrl;
+                    LoadUrl(addressEntry.Text);
+                }
             }
             if (string.IsNullOrEmpty(addressEntry?.Text))
             {
@@ -137,9 +143,7 @@ namespace SimpleBrowser
             }
         }
 
-
-
-        private void InitializeTreeView()
+        private void InitializeHistoryTreeView()
         {
             if (historyTreeView != null)
             {
@@ -163,18 +167,18 @@ namespace SimpleBrowser
         private void DisplayHistoryList(object sender, EventArgs e)
         {
             List<string> loadedHistory = browserHistory.GetAllHistoryUrls();
-            // InitializeTreeView();
             historyScrolledWindow.Opacity = 1.0;
-            // historyScrolledWindow.Visible = false;
             historyStore.Clear();  // Clear previous entries
             foreach (var url in loadedHistory)
             {
                 Console.WriteLine("From history page" + url);
                 historyStore.AppendValues(url);
             }
-            bool showHistory = !historyScrolledWindow.Visible;
-            historyScrolledWindow.Visible = showHistory;
-            contentScrolledWindow.Visible = !showHistory;
+            if (browserNotebook != null)
+            {
+                int currentPage = browserNotebook.CurrentPage;
+                browserNotebook.CurrentPage = currentPage == 0 ? 1 : 0;
+            }
         }
         private void HistoryTreeView_RowActivated(object sender, RowActivatedArgs args)
         {
@@ -192,8 +196,10 @@ namespace SimpleBrowser
 
         private void BackButton_clicked(object sender, EventArgs e)
         {
-            contentScrolledWindow.Visible = true;
-            historyScrolledWindow.Visible = false;
+            if (browserNotebook != null)
+            {
+                browserNotebook.CurrentPage = 0;
+            }
 
             if ((DateTime.Now - lastBackButtonClicked).TotalMilliseconds < 500)
             {
@@ -217,8 +223,11 @@ namespace SimpleBrowser
 
         private void NextButton_clicked(object sender, EventArgs e)
         {
-            contentScrolledWindow.Visible = true;
-            historyScrolledWindow.Visible = false;
+            if (browserNotebook != null)
+            {
+                browserNotebook.CurrentPage = 0;
+            }
+
             if ((DateTime.Now - lastNextButtonClicked).TotalMilliseconds < 500)
             {
                 Console.WriteLine("Double next button click detected. Ignoring.");
@@ -238,8 +247,10 @@ namespace SimpleBrowser
         }
         private void RefreshButton_clicked(object sender, EventArgs e)
         {
-            contentScrolledWindow.Visible = true;
-            historyScrolledWindow.Visible = false;
+            if (browserNotebook != null)
+            {
+                browserNotebook.CurrentPage = 0;
+            }
             if (contentTextView != null)
             {
                 contentTextView.Buffer.Text = "";
@@ -261,8 +272,10 @@ namespace SimpleBrowser
 
         private void HomeButton_clicked(object sender, EventArgs e)
         {
-            contentScrolledWindow.Visible = true;
-            historyScrolledWindow.Visible = false;
+            if (browserNotebook != null)
+            {
+                browserNotebook.CurrentPage = 0;
+            }
             if (addressEntry != null)
             {
                 addressEntry.Text = _homePageURL;
@@ -273,8 +286,10 @@ namespace SimpleBrowser
 
         private void AddressBar_activated(object sender, EventArgs e)
         {
-            contentScrolledWindow.Visible = true;
-            historyScrolledWindow.Visible = false;
+            if (browserNotebook != null)
+            {
+                browserNotebook.CurrentPage = 0;
+            }
             if ((DateTime.Now - lastActivated).TotalMilliseconds < 500) // 500ms threshold, adjust as needed
             {
                 Console.WriteLine("Double activation detected. Ignoring.");
@@ -293,12 +308,12 @@ namespace SimpleBrowser
         }
         private async void LoadUrl(string url)
         {
+            if (browserNotebook != null)
+            {
+                browserNotebook.CurrentPage = 0;
+            }
             if (HtmlUtility.IsValidUrl(url))
             {
-
-
-                contentScrolledWindow.Visible = true;
-                historyScrolledWindow.Visible = false;
                 var result = await NetworkManager.LoadUrl(url);
                 if (responseLabel != null)
                 {
@@ -332,8 +347,6 @@ namespace SimpleBrowser
                         // };
                     }
 
-
-
                     browserHistory.Visit(url);
                     UpdateNavigationButtonsState();  // Update navigation buttons state after a new URL is visited
                 }
@@ -349,11 +362,8 @@ namespace SimpleBrowser
 
         }
 
-
         public void ShowEditHomePageDialog(object sender, EventArgs e)
         {
-            contentScrolledWindow.Visible = true;
-            historyScrolledWindow.Visible = false;
             if (editHomePageDialog != null)
             {
                 editHomePageDialog.Run();

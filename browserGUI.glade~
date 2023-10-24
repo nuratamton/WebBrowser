@@ -381,53 +381,93 @@
           </packing>
         </child>
         <child>
-          <object class="GtkOverlay">
+          <object class="GtkNotebook" id="notebook">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="can-focus">True</property>
+            <property name="show-tabs">False</property>
             <child>
-              <object class="GtkBox">
+              <object class="GtkScrolledWindow" id="scrolledWindow">
+                <property name="visible">True</property>
                 <property name="can-focus">True</property>
-                <property name="orientation">vertical</property>
+                <property name="shadow-type">in</property>
                 <child>
-                  <object class="GtkScrolledWindow" id="scrolledWindow">
+                  <object class="GtkTextView" id="contentTextView">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="shadow-type">in</property>
-                    <child>
-                      <object class="GtkTextView" id="contentTextView">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                      </object>
-                    </child>
                   </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
                 </child>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">page1</property>
+              </object>
+              <packing>
+                <property name="tab-fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="historyScrolledWindow">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="resize-mode">queue</property>
+                <property name="shadow-type">in</property>
                 <child>
-                  <object class="GtkScrolledWindow" id="historyScrolledWindow">
-                    <property name="can-focus">False</property>
-                    <property name="opacity">0.40</property>
+                  <object class="GtkTreeView" id="historyTreeView">
+                    <property name="can-focus">True</property>
                     <property name="resize-mode">queue</property>
-                    <property name="shadow-type">in</property>
-                    <child>
-                      <object class="GtkTreeView" id="historyTreeView">
-                        <property name="can-focus">True</property>
-                        <property name="resize-mode">queue</property>
-                      </object>
+                    <child internal-child="selection">
+                      <object class="GtkTreeSelection"/>
                     </child>
                   </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
                 </child>
               </object>
               <packing>
-                <property name="index">-1</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">page 2</property>
+              </object>
+              <packing>
+                <property name="position">1</property>
+                <property name="tab-fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="favouriteScrolledWindow">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <object class="GtkTreeView">
+                    <property name="name">favouriteTreeView</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <child internal-child="selection">
+                      <object class="GtkTreeSelection"/>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">page 3</property>
+              </object>
+              <packing>
+                <property name="position">2</property>
+                <property name="tab-fill">False</property>
               </packing>
             </child>
           </object>
