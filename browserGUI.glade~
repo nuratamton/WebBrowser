@@ -513,7 +513,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="input-purpose">url</property>
-                <signal name="activate" handler="AddressBar_activated" swapped="no"/>
+                <signal name="activate" handler="AddressBarActivated" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
