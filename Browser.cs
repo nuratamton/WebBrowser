@@ -4,14 +4,16 @@ using Network;
 using BrowserHistory;
 using favourites;
 using UI = Gtk.Builder.ObjectAttribute;
+using System.Text;
 
 namespace SimpleBrowser
 {
-        class Browser : Window
+    class Browser : Window
     {
         private const string DefaultHomePage = "https://www.hw.ac.uk/dubai/";
         private const string HomePageFilePath = "homePage.txt";
 
+        private Gtk.AccelGroup accelGroup = new();
         private History browserHistory = new();
         public FavouriteStorage favouriteStorage = new();
         public FavouriteManager favouriteManager = new();
@@ -28,6 +30,7 @@ namespace SimpleBrowser
         [UI] private readonly Label? responseLabel = null;
         [UI] private readonly TreeView? historyTreeView = null;
         [UI] private readonly TreeView? favouriteTreeView = null;
+
 
         private Dialog? editHomePageDialog;
         private Dialog? favouriteNameDialog;
@@ -66,20 +69,17 @@ namespace SimpleBrowser
         private Browser(Builder builder) : base(builder.GetObject("MainWindow").Handle)
         {
             builder.Autoconnect(this);
-
+            AddAccelGroup(accelGroup);
             InitializeComponents(builder);
             AttachEvents();
             CheckDefaultUrl();
             DeleteEvent += Window_DeleteEvent;
         }
-
         private void InitializeComponents(Builder builder)
         {
             editHomePageDialog = (Dialog)builder.GetObject("EditHomePage");
             urlEntry = (Entry)builder.GetObject("urlEntry");
             okayButton = (Button)builder.GetObject("OkayButton");
-            // historyScrolledWindow = (ScrolledWindow)builder.GetObject("historyScrolledWindow");
-            // contentScrolledWindow = (ScrolledWindow)builder.GetObject("scrolledWindow");
             browserNotebook = (Notebook)builder.GetObject("notebook");
             favouriteNameDialog = (Dialog)builder.GetObject("FavouriteNameDialog");
             favouriteNameEntry = (Entry)builder.GetObject("nameEntry");
@@ -93,14 +93,18 @@ namespace SimpleBrowser
         {
             if (backButton != null)
             {
+                // Gdk.ModifierType.ControlMask -> CTRL KEY; Gdk.ModifierType.Mod1Mask-> ALT; Gdk.ModifierType.MetaMask-> CMD
+                backButton.AddAccelerator("clicked", accelGroup, (uint)Gdk.Key.Left, Gdk.ModifierType.MetaMask, Gtk.AccelFlags.Visible);
                 backButton.Clicked += (s, e) => BackButton_clicked(backButton, e);
             }
             if (nextButton != null)
             {
+                nextButton.AddAccelerator("clicked", accelGroup, (uint)Gdk.Key.Right, Gdk.ModifierType.MetaMask, Gtk.AccelFlags.Visible);
                 nextButton.Clicked += (s, e) => NextButton_clicked(nextButton, e);
             }
             if (refreshButton != null)
             {
+                refreshButton.AddAccelerator("clicked", accelGroup, (uint)Gdk.Key.R, Gdk.ModifierType.MetaMask, Gtk.AccelFlags.Visible);
                 refreshButton.Clicked += (s, e) => RefreshButton_clicked(refreshButton, e);
             }
             if (homeButton != null)
@@ -109,6 +113,7 @@ namespace SimpleBrowser
             }
             if (downloadButton != null)
             {
+                downloadButton.AddAccelerator("clicked", accelGroup, (uint)Gdk.Key.D, Gdk.ModifierType.MetaMask, Gtk.AccelFlags.Visible);
                 downloadButton.Clicked += (s, e) => DownloadButtonClicked(downloadButton, e);
             }
             if (addressEntry != null)
@@ -127,7 +132,11 @@ namespace SimpleBrowser
             {
                 favouriteTreeView.RowActivated += FavouriteTreeView_RowActivated;
             }
+        }
 
+        private void Window_DeleteEvent(object sender, DeleteEventArgs a)
+        {
+            Application.Quit();
         }
         private void CheckDefaultUrl()
         {
@@ -137,7 +146,7 @@ namespace SimpleBrowser
                 if (addressEntry != null)
                 {
                     addressEntry.Text = defaultUrl;
-                    LoadUrl(addressEntry.Text, false);
+                    _ = LoadUrl(addressEntry.Text, false);
                 }
             }
             if (string.IsNullOrEmpty(addressEntry?.Text))
@@ -145,13 +154,9 @@ namespace SimpleBrowser
                 if (addressEntry != null)
                 {
                     addressEntry.Text = DefaultHomePage;
-                    LoadUrl(addressEntry.Text, false);
+                    _ = LoadUrl(addressEntry.Text, false);
                 }
             }
-        }
-        private void Window_DeleteEvent(object sender, DeleteEventArgs a)
-        {
-            Application.Quit();
         }
 
         private void UpdateNavigationButtonsState()
@@ -201,11 +206,11 @@ namespace SimpleBrowser
                 TreeViewColumn paddingColumn = new TreeViewColumn();
                 paddingColumn.FixedWidth = 20;
 
-                favouriteTreeView.AppendColumn(nameColumn);
-                favouriteTreeView.AppendColumn(urlColumn);
-                favouriteTreeView.AppendColumn(editColumn);
-                favouriteTreeView.AppendColumn(deleteColumn);
-                favouriteTreeView.AppendColumn(paddingColumn);
+                _ = favouriteTreeView.AppendColumn(nameColumn);
+                _ = favouriteTreeView.AppendColumn(urlColumn);
+                _ = favouriteTreeView.AppendColumn(editColumn);
+                _ = favouriteTreeView.AppendColumn(deleteColumn);
+                _ = favouriteTreeView.AppendColumn(paddingColumn);
             }
         }
         private void FavouriteTreeView_RowActivated(object sender, RowActivatedArgs args)
@@ -217,7 +222,7 @@ namespace SimpleBrowser
                 if (addressEntry != null)
                 {
                     addressEntry.Text = url;
-                    LoadUrl(url, false);
+                    _ = LoadUrl(url, false);
                 }
             }
         }
@@ -238,7 +243,8 @@ namespace SimpleBrowser
                 urlColumn.AddAttribute(urlCell, "text", 0);
 
                 // Add the column to the TreeView
-                historyTreeView.AppendColumn(urlColumn);
+                _ = historyTreeView.AppendColumn(urlColumn);
+
             }
         }
 
@@ -249,7 +255,7 @@ namespace SimpleBrowser
             foreach (var url in loadedHistory)
             {
                 Console.WriteLine("From history page" + url);
-                historyStore.AppendValues(url);
+                _ = historyStore.AppendValues(url);
             }
             if (browserNotebook != null)
             {
@@ -265,7 +271,7 @@ namespace SimpleBrowser
             foreach (var fav in loadedFavorites)
             {
                 Console.WriteLine("From favorites page" + fav.URL);
-                favouriteStore.AppendValues(fav.Name, fav.URL, false, false);
+                _ = favouriteStore.AppendValues(fav.Name, fav.URL, false, false);
             }
 
             if (browserNotebook != null)
@@ -283,7 +289,7 @@ namespace SimpleBrowser
                 if (addressEntry != null)
                 {
                     addressEntry.Text = url;
-                    LoadUrl(url, false);
+                    _ = LoadUrl(url, false);
                 }
             }
         }
@@ -317,34 +323,6 @@ namespace SimpleBrowser
 
             return "";
 
-        }
-
-        private void on_favouriteButton_clicked(object sender, EventArgs e)
-        {
-            Console.WriteLine("Fav button clicked");
-
-            // Check if the addressEntry has a value, if not, just return
-            if (addressEntry == null || string.IsNullOrEmpty(addressEntry.Text))
-            {
-                Console.WriteLine("No URL available to add to favourites.");
-                return;
-            }
-            string favouriteName = PromptForFavouriteName();
-
-            // Create a new favourite item
-            var favouriteItem = new Favourite()
-            {
-                Name = favouriteName,
-                URL = addressEntry.Text
-            };
-
-            // Add to favourites and save
-            favouriteManager.AddFavourite(favouriteItem);
-
-            Console.WriteLine($"Added to favourites: {addressEntry.Text}");
-            Console.WriteLine("Fav button clicked");
-            List<Favourite> favList = favouriteManager.DisplayFavourites();
-            favouriteStorage.SaveFavorites(favList);
         }
 
         private (string, string) ShowEditFavDialog(string currentName, string currentURL)
@@ -415,7 +393,7 @@ namespace SimpleBrowser
                 favouriteManager.RemoveFavourite(favToDelete);
 
                 // Remove the entry from the TreeView
-                favouriteStore.Remove(ref iter);
+                _ = favouriteStore.Remove(ref iter);
             }
         }
 
@@ -439,7 +417,7 @@ namespace SimpleBrowser
                 {
                     addressEntry.Text = browserHistory.CurrentUrl;
                     Console.WriteLine($"Loading URL from BackButton_clicked: {addressEntry.Text}");
-                    LoadUrl(addressEntry.Text, false);
+                    _ = LoadUrl(addressEntry.Text, false);
                 }
 
                 UpdateNavigationButtonsState();
@@ -464,7 +442,7 @@ namespace SimpleBrowser
                 if (addressEntry != null)
                 {
                     addressEntry.Text = browserHistory.CurrentUrl;
-                    LoadUrl(addressEntry.Text, false);
+                    _ = LoadUrl(addressEntry.Text, false);
                 }
 
                 UpdateNavigationButtonsState();
@@ -485,14 +463,51 @@ namespace SimpleBrowser
             if (addressEntry != null)
             {
                 addressEntry.Text = currentUrl;
-                LoadUrl(addressEntry.Text, false);
+                _ = LoadUrl(addressEntry.Text, false);
             }
             else if (addressEntry != null && string.IsNullOrEmpty(addressEntry.Text))
             {
                 addressEntry.Text = HomePageURL;
-                LoadUrl(addressEntry.Text, false);
+                _ = LoadUrl(addressEntry.Text, false);
             }
 
+        }
+
+        private void on_favouriteButton_clicked(object sender, EventArgs e)
+        {
+            Console.WriteLine("Fav button clicked");
+
+            // Check if the addressEntry has a value, if not, just return
+            if (addressEntry == null || string.IsNullOrEmpty(addressEntry.Text))
+            {
+                Console.WriteLine("No URL available to add to favourites.");
+                return;
+            }
+            string favouriteName = PromptForFavouriteName();
+
+            // Create a new favourite item
+            var favouriteItem = new Favourite()
+            {
+                Name = favouriteName,
+                URL = addressEntry.Text
+            };
+
+            // Add to favourites and save
+            favouriteManager.AddFavourite(favouriteItem);
+
+            Console.WriteLine($"Added to favourites: {addressEntry.Text}");
+            Console.WriteLine("Fav button clicked");
+            List<Favourite> favList = favouriteManager.DisplayFavourites();
+            favouriteStorage.SaveFavorites(favList);
+        }
+
+
+        private async void DownloadButtonClicked(object? sender, EventArgs e)
+        {
+            _ = IsDownloadButtonClickedRecently();
+            lastDownloadkButtonClicked = DateTime.Now;
+            Console.WriteLine("Clicked");
+            await BulkDownload();
         }
 
         private void HomeButton_clicked(object sender, EventArgs e)
@@ -504,7 +519,7 @@ namespace SimpleBrowser
             if (addressEntry != null)
             {
                 addressEntry.Text = _homePageURL;
-                LoadUrl(addressEntry.Text, false);
+                _ = LoadUrl(addressEntry.Text, false);
             }
 
         }
@@ -526,22 +541,20 @@ namespace SimpleBrowser
             if (addressEntry != null)
             {
 
-                LoadUrl(addressEntry.Text, false);
+                _ = LoadUrl(addressEntry.Text, false);
 
 
             }
         }
-        public async void LoadUrl(string url, bool isBulkMode)
+        public async Task<string> LoadUrl(string url, bool isBulkMode)
         {
             if (browserNotebook != null)
             {
                 browserNotebook.CurrentPage = 0;
             }
-
-            if (!HtmlUtility.IsValidUrl(url))
+            if (!HtmlUtility.IsValidUrl(url) && responseLabel != null)
             {
                 responseLabel.Text = "Invalid URL";
-                return;
             }
 
             var result = await NetworkManager.LoadUrl(url);
@@ -562,12 +575,10 @@ namespace SimpleBrowser
 
             if (!isBulkMode)
             {
-                string displayText = $"{result.StatusCode} {result.ByteCount} {result.Url}";
                 if (contentTextView != null && contentTextView.Buffer != null)
                 {
                     contentTextView.Buffer.Text = result.Body;
                     Console.WriteLine("IN ELSE");
-                    // contentTextView.Buffer.Text = displayText;
                 }
                 string title = HtmlUtility.ExtractTitle(result.Body);
 
@@ -577,28 +588,22 @@ namespace SimpleBrowser
                 }
                 browserHistory.Visit(url);
                 UpdateNavigationButtonsState();
-
-
             }
             else
             {
                 Console.WriteLine("In Load");
                 string displayText = $"{result.StatusCode} {result.ByteCount} {result.Url}";
                 Console.WriteLine(displayText);
-                if (contentTextView != null && contentTextView.Buffer != null)
-                {
-
-                    contentTextView.QueueDraw();
-                    contentTextView.Buffer.Text = displayText;
-                }
+                return displayText;
             }
+            return string.Empty;
         }
 
         public void ShowEditHomePageDialog(object sender, EventArgs e)
         {
             if (editHomePageDialog != null)
             {
-                editHomePageDialog.Run();
+                _ = editHomePageDialog.Run();
                 editHomePageDialog.Hide();
             }
         }
@@ -637,41 +642,46 @@ namespace SimpleBrowser
             }
         }
 
-        public async void InitiateBulkDownload(string filename = "bulk.txt")
+        private bool IsDownloadButtonClickedRecently()
         {
-            try
-            {
-               
-                await BulkDownload(filename);
-                Console.WriteLine("Called BulkDownload");
-            }
-            catch (Exception ex)
-            {
-                responseLabel.Text = ex.Message;
-            }
+            return (DateTime.Now - lastDownloadkButtonClicked).TotalMilliseconds < 500;
         }
 
-        private void DownloadButtonClicked(object? sender, EventArgs e)
-        {
-            if ((DateTime.Now - lastDownloadkButtonClicked).TotalMilliseconds < 500)
-            {
-                Console.WriteLine("Double download button click detected. Ignoring.");
-                return;
-            }
-            lastDownloadkButtonClicked = DateTime.Now;
-            Console.WriteLine("Clicked");
-            InitiateBulkDownload();
-        }
 
         public async Task BulkDownload(string filename = "bulk.txt")
         {
-            var urls = GetUrlsFromFile(filename);
-            foreach (var url in urls)
+            try
             {
-                Console.WriteLine("URL:" + url);
-                LoadUrl(url, true);
-                await Task.Delay(100);
+                var urls = GetUrlsFromFile(filename);
+                StringBuilder allResults = new StringBuilder();
+
+                foreach (var url in urls)
+                {
+                    Console.WriteLine("URL:" + url);
+
+                    string displayText = await LoadUrl(url, true);
+                    if (contentTextView != null && contentTextView.Buffer != null)
+                    {
+                        _ = allResults.AppendLine(displayText);
+                    }
+
+                    await Task.Delay(100);
+                }
+
+                if (contentTextView != null && contentTextView.Buffer != null)
+                {
+                    contentTextView.Buffer.Text = allResults.ToString();
+                }
             }
+            catch (Exception ex)
+            {
+                if (responseLabel != null)
+                {
+                    responseLabel.Text = ex.Message;
+                }
+
+            }
+
         }
 
         private static List<string> GetUrlsFromFile(string filename)
@@ -688,8 +698,8 @@ namespace SimpleBrowser
 
     }
 
-    
-        
 
-    
+
+
+
 }
