@@ -48,11 +48,22 @@ namespace favourites
         {
             return favouriteList;
         }
+        
         public void AddFavourite(Favourite item)
         {
-            favouriteList.Add(item);
-            storage.SaveFavorites(favouriteList);
+            if (item != null)
+            {
+                if (!favouriteList.Any(fav => fav.URL == item.URL))
+                {
+                    favouriteList.Add(item);
+                    storage.SaveFavorites(favouriteList);
+                }
+                else{
+                    Console.WriteLine("URL already present");
+                }
+            }
         }
+
         public void RemoveFavourite(Favourite item)
         {
             favouriteList.RemoveAll(fav => fav.Name == item.Name && fav.URL == item.URL);

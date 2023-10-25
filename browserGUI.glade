@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.40.0 -->
 <interface>
-  <requires lib="gtk+" version="3.24"/>
+  <requires lib="gtk+" version="3.24" />
   <object class="GtkDialog" id="EditFavDialog">
     <property name="can-focus">False</property>
     <property name="default-width">320</property>
@@ -351,7 +351,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="use-stock">False</property>
-                        <signal name="activate" handler="ShowEditHomePageDialog" swapped="no"/>
+                        <signal name="activate" handler="ShowEditHomePageDialog" swapped="no" />
                       </object>
                     </child>
                     <child>
@@ -401,7 +401,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="use-stock">False</property>
-                        <signal name="activate" handler="DisplayHistoryList" swapped="no"/>
+                        <signal name="activate" handler="DisplayHistoryList" swapped="no" />
                       </object>
                     </child>
                     <child>
@@ -410,7 +410,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="use-stock">False</property>
-                        <signal name="activate" handler="DisplayFavouriteList" swapped="no"/>
+                        <signal name="activate" handler="DisplayFavouriteList" swapped="no" />
                       </object>
                     </child>
                   </object>
@@ -473,7 +473,7 @@
                 <property name="receives-default">True</property>
                 <property name="image-position">top</property>
                 <property name="always-show-image">True</property>
-                <signal name="clicked" handler="BackButton_clicked" swapped="no"/>
+                <signal name="clicked" handler="BackButton_clicked" swapped="no" />
                 <child>
                   <object class="GtkImage" id="backIcon">
                     <property name="visible">True</property>
@@ -493,7 +493,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <signal name="clicked" handler="NextButton_clicked" swapped="no"/>
+                <signal name="clicked" handler="NextButton_clicked" swapped="no" />
                 <child>
                   <object class="GtkImage" id="nextIcon">
                     <property name="visible">True</property>
@@ -513,7 +513,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="input-purpose">url</property>
-                <signal name="activate" handler="AddressBar_activated" swapped="no"/>
+                <signal name="activate" handler="AddressBar_activated" swapped="no" />
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -526,7 +526,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <signal name="clicked" handler="RefreshButton_clicked" swapped="no"/>
+                <signal name="clicked" handler="RefreshButton_clicked" swapped="no" />
                 <child>
                   <object class="GtkImage" id="refreshIcon">
                     <property name="visible">True</property>
@@ -546,7 +546,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <signal name="clicked" handler="on_favouriteButton_clicked" swapped="no"/>
+                <signal name="clicked" handler="on_favouriteButton_clicked" swapped="no" />
                 <child>
                   <object class="GtkImage" id="favouriteIcon">
                     <property name="visible">True</property>
@@ -562,11 +562,31 @@
               </packing>
             </child>
             <child>
+              <object class="GtkButton" id="downloadButton">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="DownloadButtonClicked" swapped="no" />
+                <child>
+                  <object class="GtkImage" id="downloadIcon">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">document-save</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">5</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkButton" id="homeButton">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <signal name="clicked" handler="HomeButton_clicked" swapped="no"/>
+                <signal name="clicked" handler="HomeButton_clicked" swapped="no" />
                 <child>
                   <object class="GtkImage" id="homeIcon">
                     <property name="visible">True</property>
@@ -578,7 +598,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">5</property>
+                <property name="position">6</property>
               </packing>
             </child>
           </object>
@@ -627,7 +647,7 @@
                     <property name="can-focus">True</property>
                     <property name="resize-mode">queue</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection"/>
+                      <object class="GtkTreeSelection" />
                     </child>
                   </object>
                 </child>
@@ -658,7 +678,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection"/>
+                      <object class="GtkTreeSelection" />
                     </child>
                   </object>
                 </child>

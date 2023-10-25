@@ -34,6 +34,6 @@ namespace Utility
             bool result = Uri.TryCreate(urlString, UriKind.Absolute, out Uri? uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
             return result;
         }
-
+       
     }
 }

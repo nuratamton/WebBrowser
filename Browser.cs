@@ -7,8 +7,7 @@ using UI = Gtk.Builder.ObjectAttribute;
 
 namespace SimpleBrowser
 {
-
-    class Browser : Window
+        class Browser : Window
     {
         private const string DefaultHomePage = "https://www.hw.ac.uk/dubai/";
         private const string HomePageFilePath = "homePage.txt";
@@ -24,6 +23,7 @@ namespace SimpleBrowser
         [UI] private readonly Entry? addressEntry = null;
         [UI] private readonly Button? refreshButton = null;
         [UI] private readonly Button? homeButton = null;
+        [UI] private readonly Button? downloadButton = null;
         [UI] private readonly TextView? contentTextView = null;
         [UI] private readonly Label? responseLabel = null;
         [UI] private readonly TreeView? historyTreeView = null;
@@ -42,6 +42,7 @@ namespace SimpleBrowser
         private DateTime lastBackButtonClicked = DateTime.MinValue;
         private DateTime lastNextButtonClicked = DateTime.MinValue;
         private DateTime lastActivated = DateTime.MinValue;
+        private DateTime lastDownloadkButtonClicked = DateTime.MinValue;
 
         private string _homePageURL = DefaultHomePage;
         private string HomePageURL
@@ -106,6 +107,10 @@ namespace SimpleBrowser
             {
                 homeButton.Clicked += (s, e) => HomeButton_clicked(homeButton, e);
             }
+            if (downloadButton != null)
+            {
+                downloadButton.Clicked += (s, e) => DownloadButtonClicked(downloadButton, e);
+            }
             if (addressEntry != null)
             {
                 addressEntry.Activated += (s, e) => AddressBar_activated(addressEntry, e);
@@ -132,7 +137,7 @@ namespace SimpleBrowser
                 if (addressEntry != null)
                 {
                     addressEntry.Text = defaultUrl;
-                    LoadUrl(addressEntry.Text);
+                    LoadUrl(addressEntry.Text, false);
                 }
             }
             if (string.IsNullOrEmpty(addressEntry?.Text))
@@ -140,7 +145,7 @@ namespace SimpleBrowser
                 if (addressEntry != null)
                 {
                     addressEntry.Text = DefaultHomePage;
-                    LoadUrl(addressEntry.Text);
+                    LoadUrl(addressEntry.Text, false);
                 }
             }
         }
@@ -212,11 +217,10 @@ namespace SimpleBrowser
                 if (addressEntry != null)
                 {
                     addressEntry.Text = url;
-                    LoadUrl(url);
+                    LoadUrl(url, false);
                 }
             }
         }
-
         private void InitializeHistoryTreeView()
         {
             if (historyTreeView != null)
@@ -279,39 +283,38 @@ namespace SimpleBrowser
                 if (addressEntry != null)
                 {
                     addressEntry.Text = url;
-                    LoadUrl(url);
+                    LoadUrl(url, false);
                 }
             }
         }
 
         private string PromptForFavouriteName()
         {
-            if (favouriteNameDialog == null)
+
+            // Reset the entry each time it's shown
+            if (favouriteNameEntry != null)
             {
-                // Reset the entry each time it's shown
-                if (favouriteNameEntry != null)
-                {
-                    favouriteNameEntry.Text = "";
-                }
-
-                string? favouriteName = null;
-
-                // Show the dialog and check the response
-                if (favouriteNameDialog != null && favouriteNameEntry != null)
-                {
-                    if (favouriteNameDialog.Run() == (int)ResponseType.Ok && !string.IsNullOrEmpty(favouriteNameEntry.Text))
-                    {
-                        favouriteName = favouriteNameEntry.Text;
-                    }
-
-                    // Hide the dialog after use
-                    favouriteNameDialog.Hide();
-                }
-                if (favouriteName != null)
-                {
-                    return favouriteName;
-                }
+                favouriteNameEntry.Text = "";
             }
+
+            string? favouriteName = null;
+
+            // Show the dialog and check the response
+            if (favouriteNameDialog != null && favouriteNameEntry != null)
+            {
+                if (favouriteNameDialog.Run() == (int)ResponseType.Ok && !string.IsNullOrEmpty(favouriteNameEntry.Text))
+                {
+                    favouriteName = favouriteNameEntry.Text;
+                }
+
+                // Hide the dialog after use
+                favouriteNameDialog.Hide();
+            }
+            if (favouriteName != null)
+            {
+                return favouriteName;
+            }
+
             return "";
 
         }
@@ -436,7 +439,7 @@ namespace SimpleBrowser
                 {
                     addressEntry.Text = browserHistory.CurrentUrl;
                     Console.WriteLine($"Loading URL from BackButton_clicked: {addressEntry.Text}");
-                    LoadUrl(addressEntry.Text);
+                    LoadUrl(addressEntry.Text, false);
                 }
 
                 UpdateNavigationButtonsState();
@@ -461,7 +464,7 @@ namespace SimpleBrowser
                 if (addressEntry != null)
                 {
                     addressEntry.Text = browserHistory.CurrentUrl;
-                    LoadUrl(addressEntry.Text);
+                    LoadUrl(addressEntry.Text, false);
                 }
 
                 UpdateNavigationButtonsState();
@@ -482,12 +485,12 @@ namespace SimpleBrowser
             if (addressEntry != null)
             {
                 addressEntry.Text = currentUrl;
-                LoadUrl(addressEntry.Text);
+                LoadUrl(addressEntry.Text, false);
             }
             else if (addressEntry != null && string.IsNullOrEmpty(addressEntry.Text))
             {
                 addressEntry.Text = HomePageURL;
-                LoadUrl(addressEntry.Text);
+                LoadUrl(addressEntry.Text, false);
             }
 
         }
@@ -501,7 +504,7 @@ namespace SimpleBrowser
             if (addressEntry != null)
             {
                 addressEntry.Text = _homePageURL;
-                LoadUrl(addressEntry.Text);
+                LoadUrl(addressEntry.Text, false);
             }
 
         }
@@ -523,55 +526,71 @@ namespace SimpleBrowser
             if (addressEntry != null)
             {
 
-                LoadUrl(addressEntry.Text);
+                LoadUrl(addressEntry.Text, false);
 
 
             }
         }
-        private async void LoadUrl(string url)
+        public async void LoadUrl(string url, bool isBulkMode)
         {
             if (browserNotebook != null)
             {
                 browserNotebook.CurrentPage = 0;
             }
-            if (HtmlUtility.IsValidUrl(url))
+
+            if (!HtmlUtility.IsValidUrl(url))
             {
-                var result = await NetworkManager.LoadUrl(url);
+                responseLabel.Text = "Invalid URL";
+                return;
+            }
+
+            var result = await NetworkManager.LoadUrl(url);
+            Console.WriteLine(result.Url);
+
+            if (responseLabel != null)
+            {
+                responseLabel.Text = "";
+            }
+
+            if (!string.IsNullOrEmpty(result.ErrorMessage))
+            {
                 if (responseLabel != null)
                 {
-                    responseLabel.Text = "";
+                    responseLabel.Text = result.ErrorMessage;
                 }
-                if (!string.IsNullOrEmpty(result.ErrorMessage))
-                {
-                    if (responseLabel != null)
-                    {
-                        responseLabel.Text = result.ErrorMessage;
-                    }
-                }
-                else
-                {
-                    if (contentTextView != null && contentTextView.Buffer != null)
-                    {
-                        contentTextView.Buffer.Text = result.Body;
-                    }
-                    string title = HtmlUtility.ExtractTitle(result.Body);
+            }
 
-                    if (responseLabel != null)
-                    {
-                        responseLabel.Text = (int)result.StatusCode + " | " + result.ReasonPhrase + "\n" + title;
-                    }
-
-                    browserHistory.Visit(url);
-                    UpdateNavigationButtonsState();
+            if (!isBulkMode)
+            {
+                string displayText = $"{result.StatusCode} {result.ByteCount} {result.Url}";
+                if (contentTextView != null && contentTextView.Buffer != null)
+                {
+                    contentTextView.Buffer.Text = result.Body;
+                    Console.WriteLine("IN ELSE");
+                    // contentTextView.Buffer.Text = displayText;
                 }
+                string title = HtmlUtility.ExtractTitle(result.Body);
+
+                if (responseLabel != null)
+                {
+                    responseLabel.Text = (int)result.StatusCode + " | " + result.ReasonPhrase + "\n" + title;
+                }
+                browserHistory.Visit(url);
+                UpdateNavigationButtonsState();
+
+
             }
             else
             {
-                if (responseLabel != null)
+                Console.WriteLine("In Load");
+                string displayText = $"{result.StatusCode} {result.ByteCount} {result.Url}";
+                Console.WriteLine(displayText);
+                if (contentTextView != null && contentTextView.Buffer != null)
                 {
-                    responseLabel.Text = "Invalid URL";
-                }
 
+                    contentTextView.QueueDraw();
+                    contentTextView.Buffer.Text = displayText;
+                }
             }
         }
 
@@ -617,5 +636,60 @@ namespace SimpleBrowser
                 }
             }
         }
+
+        public async void InitiateBulkDownload(string filename = "bulk.txt")
+        {
+            try
+            {
+               
+                await BulkDownload(filename);
+                Console.WriteLine("Called BulkDownload");
+            }
+            catch (Exception ex)
+            {
+                responseLabel.Text = ex.Message;
+            }
+        }
+
+        private void DownloadButtonClicked(object? sender, EventArgs e)
+        {
+            if ((DateTime.Now - lastDownloadkButtonClicked).TotalMilliseconds < 500)
+            {
+                Console.WriteLine("Double download button click detected. Ignoring.");
+                return;
+            }
+            lastDownloadkButtonClicked = DateTime.Now;
+            Console.WriteLine("Clicked");
+            InitiateBulkDownload();
+        }
+
+        public async Task BulkDownload(string filename = "bulk.txt")
+        {
+            var urls = GetUrlsFromFile(filename);
+            foreach (var url in urls)
+            {
+                Console.WriteLine("URL:" + url);
+                LoadUrl(url, true);
+                await Task.Delay(100);
+            }
+        }
+
+        private static List<string> GetUrlsFromFile(string filename)
+        {
+            if (File.Exists(filename))
+            {
+                return File.ReadAllLines(filename).ToList();
+            }
+            else
+            {
+                throw new FileNotFoundException("File not found");
+            }
+        }
+
     }
+
+    
+        
+
+    
 }
