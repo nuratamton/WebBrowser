@@ -62,7 +62,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="favNameEntry">
+          <object class="GtkEntry" id="EditNameEntry">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
           </object>
@@ -85,7 +85,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="favUrlEntry">
+          <object class="GtkEntry" id="EditUrlEntry">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
           </object>
@@ -99,6 +99,7 @@
     </child>
     <action-widgets>
       <action-widget response="-5">OkayButton3</action-widget>
+      <action-widget response="-6">CancelButton3</action-widget>
     </action-widgets>
   </object>
   <object class="GtkDialog" id="EditHomePage">

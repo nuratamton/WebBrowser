@@ -9,9 +9,12 @@ namespace Browser
         {
             Application.Init();
             var app = new Application("com.example.simplebrowser", GLib.ApplicationFlags.None);
+            
+
             var win = new SimpleBrowser.Browser();
             app.AddWindow(win);
             win.ShowAll();
+
             Application.Run();
         }
     }

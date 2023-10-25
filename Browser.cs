@@ -17,7 +17,7 @@ namespace SimpleBrowser
         public FavouriteStorage favouriteStorage = new();
         public FavouriteManager favouriteManager = new();
         private readonly ListStore historyStore = new(typeof(string));
-        private readonly ListStore favouriteStore = new(typeof(string), typeof(string), typeof(string), typeof(string));
+        private readonly ListStore favouriteStore = new(typeof(string), typeof(string), typeof(bool), typeof(bool));
 
         [UI] private readonly Button? backButton = null;
         [UI] private readonly Button? nextButton = null;
@@ -188,8 +188,8 @@ namespace SimpleBrowser
                 CellRendererToggle deleteButton = new();
                 deleteButton.Activatable = true; //clickable
                 deleteButton.Toggled += OnDeleteClicked;
-                deleteColumn.AddAttribute(deleteButton, "active", 3);
                 deleteColumn.PackStart(deleteButton, false);
+                deleteColumn.AddAttribute(deleteButton, "active", 3);
                 deleteColumn.FixedWidth = 50;
 
                 // To adjust UI spacing
@@ -286,29 +286,31 @@ namespace SimpleBrowser
 
         private string PromptForFavouriteName()
         {
-
-            // Reset the entry each time it's shown
-            if (favouriteNameEntry != null)
+            if (favouriteNameDialog == null)
             {
-                favouriteNameEntry.Text = "";
-            }
-
-            string? favouriteName = null;
-
-            // Show the dialog and check the response
-            if (favouriteNameDialog != null && favouriteNameEntry != null)
-            {
-                if (favouriteNameDialog.Run() == (int)ResponseType.Ok && !string.IsNullOrEmpty(favouriteNameEntry.Text))
+                // Reset the entry each time it's shown
+                if (favouriteNameEntry != null)
                 {
-                    favouriteName = favouriteNameEntry.Text;
+                    favouriteNameEntry.Text = "";
                 }
 
-                // Hide the dialog after use
-                favouriteNameDialog.Hide();
-            }
-            if (favouriteName != null)
-            {
-                return favouriteName;
+                string? favouriteName = null;
+
+                // Show the dialog and check the response
+                if (favouriteNameDialog != null && favouriteNameEntry != null)
+                {
+                    if (favouriteNameDialog.Run() == (int)ResponseType.Ok && !string.IsNullOrEmpty(favouriteNameEntry.Text))
+                    {
+                        favouriteName = favouriteNameEntry.Text;
+                    }
+
+                    // Hide the dialog after use
+                    favouriteNameDialog.Hide();
+                }
+                if (favouriteName != null)
+                {
+                    return favouriteName;
+                }
             }
             return "";
 
@@ -359,7 +361,7 @@ namespace SimpleBrowser
             string newName = editNameEntry.Text.Trim();
             string newURL = editUrlEntry.Text.Trim();
 
-            editFavDialog.Destroy();
+            editFavDialog.Hide();
             if (response == (int)ResponseType.Ok)
             {
                 return (newName, newURL);
@@ -371,25 +373,30 @@ namespace SimpleBrowser
         {
             // determine which item is treeview is selected
             TreeIter iter;
-            var selectedRows = favouriteTreeView.Selection.GetSelectedRows();
-            if (selectedRows.Length > 0 && favouriteStore.GetIter(out iter, selectedRows[0]))
+            if (favouriteTreeView != null)
             {
-                // getting name and URL of that item
-                var favName = (string)favouriteStore.GetValue(iter, 0);
-                var favURL = (string)favouriteStore.GetValue(iter, 1);
-                // show dialog with those values as default
-                var (newName, newURL) = ShowEditFavDialog(favName, favURL);
+                var selectedRows = favouriteTreeView.Selection.GetSelectedRows();
 
-                if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newURL))
+                if (selectedRows.Length > 0 && favouriteStore.GetIter(out iter, selectedRows[0]))
                 {
-                    // updating the existing item in file
-                    Favourite existingFav = new Favourite { Name = favName, URL = favURL };
-                    favouriteManager.ModifyFavourite(newName, newURL, existingFav);
-                    // update in treeview
-                    favouriteStore.SetValue(iter, 0, newName);
-                    favouriteStore.SetValue(iter, 1, newURL);
+                    // getting name and URL of that item
+                    var favName = (string)favouriteStore.GetValue(iter, 0);
+                    var favURL = (string)favouriteStore.GetValue(iter, 1);
+                    // show dialog with those values as default
+                    var (newName, newURL) = ShowEditFavDialog(favName, favURL);
+
+                    if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newURL))
+                    {
+                        // updating the existing item in file
+                        Favourite existingFav = new Favourite { Name = favName, URL = favURL };
+                        favouriteManager.ModifyFavourite(newName, newURL, existingFav);
+                        // update in treeview
+                        favouriteStore.SetValue(iter, 0, newName);
+                        favouriteStore.SetValue(iter, 1, newURL);
+                    }
                 }
             }
+
         }
 
         private void OnDeleteClicked(object sender, ToggledArgs args)
