@@ -601,6 +601,19 @@
                 <property name="position">6</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkFileChooserButton" id="fileChooserButton">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="title" translatable="yes"/>
+                <signal name="file-set" handler="FileButtonFileSet" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">7</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>

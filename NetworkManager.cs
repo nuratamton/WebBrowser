@@ -4,7 +4,7 @@ using Utility;
 namespace Network
 {
     // class for storing result when fetching URL
-    public class LoadUrlResult
+    public struct LoadUrlResult
     {
         public int StatusCode { get; set; }
         public string? ReasonPhrase { get; set; }
