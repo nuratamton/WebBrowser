@@ -5,13 +5,16 @@ using BrowserHistory;
 using favourites;
 using UI = Gtk.Builder.ObjectAttribute;
 using System.Text;
+using System.IO;
 
 namespace SimpleBrowser
 {
     // Represents the main window
     class Browser : Window
     {
-        private const string HomePageFilePath = "homePage.txt";
+        private static readonly string appName = System.IO.Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
+         private static string HomePageFilePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, "homePage.txt");
+        // private const string HomePageFilePath = "homePage.txt";
         private static string DefaultHomePage = File.ReadAllText(HomePageFilePath).ToString();
 
         private NavigationHandler navigationHandler;
@@ -365,8 +368,14 @@ namespace SimpleBrowser
                 editHomePageDialog.Hide();
             }
         }
+        // private static string appName = System.IO.Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
+       
         private static void SaveHomePageUrlToFile(string url)
         {
+            if (!Directory.Exists(System.IO.Path.GetDirectoryName(HomePageFilePath)))
+            {
+                Directory.CreateDirectory(System.IO.Path.GetDirectoryName(HomePageFilePath));
+            }
             // write the URL to the file
             File.WriteAllText(HomePageFilePath, url);
         }
