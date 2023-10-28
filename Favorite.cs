@@ -12,22 +12,12 @@ namespace favourites
     // class for storing and saving the list of favourites
     class FavouriteStorage
     {
-        static string appName = System.IO.Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
-        private static string favoriteFile;
-        // private const string favoriteFile = "favourites.json";
-
-        static FavouriteStorage()
-        {
-            favoriteFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, "favourites.json");
-        }
+        // constant holding the file name
+        private const string favoriteFile = "favourites.json";
 
         // static method that takes a list of favourite objects
         public static void SaveFavorites(List<Favourite> favouriteList)
         {
-            if (!Directory.Exists(Path.GetDirectoryName(favoriteFile)))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(favoriteFile));
-            }
             try
             {
                 // serialize the list of favourites to a json string

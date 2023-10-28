@@ -11,19 +11,15 @@ namespace BrowserHistory
         public Node? Next { get; set; }
     }
 
-
     // class to manage and keep track of history
     public class History
     {
-        private static readonly string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
-        private readonly string HistoryFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, "history.txt");
         // Current points to the current URL being visited
         private Node? Current;
         private readonly List<string> historyList = new();
 
         public History()
         {
-
             LoadHistory();
         }
 
@@ -116,13 +112,9 @@ namespace BrowserHistory
         {
             try
             {
-                if (!Directory.Exists(Path.GetDirectoryName(HistoryFilePath)))
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(HistoryFilePath));
-                }
                 // Retrieves all Urls into a list
                 List<string> historyList = GetAllHistoryUrls();
-                using StreamWriter sw = new(HistoryFilePath);
+                using StreamWriter sw = new("history.txt");
                 // each URL in list is added to the file
                 foreach (var item in historyList)
                 {
@@ -139,24 +131,13 @@ namespace BrowserHistory
         {
             try
             {
-                // Check if file exists
-                if (!File.Exists(HistoryFilePath))
+                using StreamReader sr = new("history.txt");
+                string? line;
+                // for each URL in the file, add to a list
+                while ((line = sr.ReadLine()) != null)
                 {
-                    // Create a new file if it doesn't exist
-                    using FileStream fs = File.Create(HistoryFilePath);
-                    fs.Close(); // Close the FileStream to release the file handle
+                    historyList.Add(line);
                 }
-                else
-                {
-                    using StreamReader sr = new(HistoryFilePath);
-                    string? line;
-                    // for each URL in the file, add to a list
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        historyList.Add(line);
-                    }
-                }
-
             }
             catch (Exception ex)
             {
