@@ -12,7 +12,7 @@ namespace Network
         public string? ErrorMessage { get; set; }
 
         public string? Url { get; set; }
-        public int ByteCount => Body != null ? Encoding.UTF8.GetByteCount(Body) : 0;
+        public readonly int ByteCount => Body != null ? Encoding.UTF8.GetByteCount(Body) : 0;
     }
 
     public class NetworkManager

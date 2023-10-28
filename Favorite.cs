@@ -33,7 +33,7 @@ namespace favourites
         }
 
         // a method that returns a list of favourite objects
-        public List<Favourite> LoadFavorites()
+        public static List<Favourite> LoadFavorites()
         {
             try
             {
@@ -68,7 +68,7 @@ namespace favourites
             // initializes storage
             storage = new FavouriteStorage();
             // load favourites from storage into list
-            favouriteList = storage.LoadFavorites();
+            favouriteList = FavouriteStorage.LoadFavorites();
         }
 
         // Simply returns the list

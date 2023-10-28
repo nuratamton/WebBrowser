@@ -16,7 +16,7 @@ namespace BrowserHistory
     {
         // Current points to the current URL being visited
         private Node? Current;
-        private List<string> historyList = new();
+        private readonly List<string> historyList = new();
 
         public History()
         {
@@ -30,7 +30,7 @@ namespace BrowserHistory
         public void Visit(string url)
         {
 
-            Console.WriteLine($"Visit called with {url}");
+            Console.WriteLine("Visit called with" + url);
             // if current url is the same just return
             if (Current != null && Current.Url == url)
             {
