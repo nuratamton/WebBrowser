@@ -139,13 +139,24 @@ namespace BrowserHistory
         {
             try
             {
-                using StreamReader sr = new(HistoryFilePath);
-                string? line;
-                // for each URL in the file, add to a list
-                while ((line = sr.ReadLine()) != null)
+                // Check if file exists
+                if (!File.Exists(HistoryFilePath))
                 {
-                    historyList.Add(line);
+                    // Create a new file if it doesn't exist
+                    using FileStream fs = File.Create(HistoryFilePath);
+                    fs.Close(); // Close the FileStream to release the file handle
                 }
+                else
+                {
+                    using StreamReader sr = new(HistoryFilePath);
+                    string? line;
+                    // for each URL in the file, add to a list
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        historyList.Add(line);
+                    }
+                }
+
             }
             catch (Exception ex)
             {
