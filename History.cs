@@ -114,13 +114,11 @@ namespace BrowserHistory
             {
                 // Retrieves all Urls into a list
                 List<string> historyList = GetAllHistoryUrls();
-                using (StreamWriter sw = new StreamWriter("history.txt"))
+                using StreamWriter sw = new("history.txt");
+                // each URL in list is added to the file
+                foreach (var item in historyList)
                 {
-                    // each URL in list is added to the file
-                    foreach (var item in historyList)
-                    {
-                        sw.WriteLine(item);
-                    }
+                    sw.WriteLine(item);
                 }
             }
             catch (Exception ex)
@@ -133,14 +131,12 @@ namespace BrowserHistory
         {
             try
             {
-                using (StreamReader sr = new StreamReader("history.txt"))
+                using StreamReader sr = new("history.txt");
+                string? line;
+                // for each URL in the file, add to a list
+                while ((line = sr.ReadLine()) != null)
                 {
-                    string? line;
-                    // for each URL in the file, add to a list
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        historyList.Add(line);
-                    }
+                    historyList.Add(line);
                 }
             }
             catch (Exception ex)

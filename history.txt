@@ -1,4 +1,5 @@
 http://www.hw.ac.uk
 http://www.google.com
+http://google.com
 http://www.facebook.com
 https://instagram.com

@@ -56,8 +56,7 @@ namespace Network
             }
             catch (HttpRequestException e)
             {
-                Console.WriteLine($"Request error: {e.Message}");
-                result.ErrorMessage = $"Request error: {e.Message}";
+                result.ErrorMessage = "Request error" + e.Message;
                 return result;
             }
         }
