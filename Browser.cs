@@ -5,14 +5,16 @@ using BrowserHistory;
 using favourites;
 using UI = Gtk.Builder.ObjectAttribute;
 using System.Text;
+using System.Runtime.InteropServices;
 
 namespace SimpleBrowser
 {
     // Represents the main window
     class Browser : Window
     {
-        private const string HomePageFilePath = "homePage.txt";
-        private static string DefaultHomePage = File.ReadAllText(HomePageFilePath).ToString();
+         private const string HomePageFileName = "homePage.txt";
+        private static readonly string HomePageFilePath = GetHomePageFilePath();
+        private static readonly string DefaultHomePage = LoadHomePageUrlFromFile();
 
         private NavigationHandler navigationHandler;
         private readonly AccelGroup accelGroup = new();
@@ -62,7 +64,7 @@ namespace SimpleBrowser
         {
             // methods called on load
             UpdateNavigationButtonsState();
-            browserHistory.LoadHistory();
+            // browserHistory.LoadHistory();
             _homePageURL = LoadHomePageUrlFromFile();
             if (browserNotebook != null)
             {
@@ -365,6 +367,33 @@ namespace SimpleBrowser
                 editHomePageDialog.Hide();
             }
         }
+
+        private static string GetHomePageFilePath()
+        {
+            string appFolder;
+            string appName = System.IO.Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                appFolder = System.IO.Path.Combine(appDataFolder, appName);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                string libraryFolder = System.IO.Path.Combine(homeFolder, "Library");
+                appFolder = System.IO.Path.Combine(libraryFolder, "Application Support", appName);
+            }
+            else
+            {
+                string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                appFolder = System.IO.Path.Combine(homeFolder, "." + appName);
+            }
+
+            Directory.CreateDirectory(appFolder);
+            return System.IO.Path.Combine(appFolder, HomePageFileName);
+        }
+
         private static void SaveHomePageUrlToFile(string url)
         {
             // write the URL to the file

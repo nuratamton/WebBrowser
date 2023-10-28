@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace favourites
@@ -14,6 +15,33 @@ namespace favourites
     {
         // constant holding the file name
         private const string favoriteFile = "favourites.json";
+        private static readonly string favoriteFilePath = GetFavoritesFilePath();
+
+        private static string GetFavoritesFilePath()
+        {
+            string appFolder;
+            string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                appFolder = Path.Combine(appDataFolder, appName);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                string libraryFolder = Path.Combine(homeFolder, "Library");
+                appFolder = Path.Combine(libraryFolder, "Application Support", appName);
+            }
+            else
+            {
+                string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                appFolder = Path.Combine(homeFolder, "." + appName);
+            }
+
+            Directory.CreateDirectory(appFolder);
+            return Path.Combine(appFolder, favoriteFile);
+        }
 
         // static method that takes a list of favourite objects
         public static void SaveFavorites(List<Favourite> favouriteList)

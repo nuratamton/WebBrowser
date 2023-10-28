@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace BrowserHistory
 {
     // Represents every URL visited, works as a doubly linked list
@@ -17,9 +19,11 @@ namespace BrowserHistory
         // Current points to the current URL being visited
         private Node? Current;
         private readonly List<string> historyList = new();
+        private string? historyFilePath;
 
         public History()
         {
+            SetHistoryFilePath();
             LoadHistory();
         }
 
@@ -107,6 +111,32 @@ namespace BrowserHistory
             // var orderedHistory = allHistory.ToList();
             return allHistory.ToList();
         }
+        private void SetHistoryFilePath()
+        {
+            string appFolder;
+            string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                appFolder = Path.Combine(appDataFolder, appName);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                string libraryFolder = Path.Combine(homeFolder, "Library");
+                appFolder = Path.Combine(libraryFolder, "Application Support", appName);
+            }
+            else
+            {
+                // For Linux or other OS
+                string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                appFolder = Path.Combine(homeFolder, "." + appName);
+            }
+
+            Directory.CreateDirectory(appFolder);
+            historyFilePath = Path.Combine(appFolder, "history.txt");
+        }
 
         private void SaveHistory()
         {
@@ -114,7 +144,8 @@ namespace BrowserHistory
             {
                 // Retrieves all Urls into a list
                 List<string> historyList = GetAllHistoryUrls();
-                using StreamWriter sw = new("history.txt");
+                
+                using StreamWriter sw = new(historyFilePath);
                 // each URL in list is added to the file
                 foreach (var item in historyList)
                 {
@@ -131,12 +162,15 @@ namespace BrowserHistory
         {
             try
             {
-                using StreamReader sr = new("history.txt");
-                string? line;
-                // for each URL in the file, add to a list
-                while ((line = sr.ReadLine()) != null)
+                if (File.Exists(historyFilePath))
                 {
-                    historyList.Add(line);
+                    using StreamReader sr = new(historyFilePath);
+                    string? line;
+                    // for each URL in the file, add to a list
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        historyList.Add(line);
+                    }
                 }
             }
             catch (Exception ex)
