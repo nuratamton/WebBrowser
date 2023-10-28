@@ -756,6 +756,12 @@ namespace SimpleBrowser
 
             // Set the full path for bulk.txt
             bulkFilePath = System.IO.Path.Combine(appFolder, "bulk.txt");
+            if (!File.Exists(bulkFilePath))
+            {
+                string defaultLinks = "http://google.com\nhttp://gmail.com\nhttp://instagram.com";
+                // Create an empty file
+                File.WriteAllText(bulkFilePath, defaultLinks);
+            }
         }
 
 
