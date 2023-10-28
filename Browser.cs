@@ -12,7 +12,7 @@ namespace SimpleBrowser
     // Represents the main window
     class Browser : Window
     {
-         private const string HomePageFileName = "homePage.txt";
+        private const string HomePageFileName = "homePage.txt";
         private static readonly string HomePageFilePath = GetHomePageFilePath();
         private static readonly string DefaultHomePage = LoadHomePageUrlFromFile();
 
@@ -50,6 +50,7 @@ namespace SimpleBrowser
 
         private DateTime lastActivated = DateTime.MinValue;
         private DateTime lastDownloadButtonClicked = DateTime.MinValue;
+        private string? bulkFilePath;
 
         // Manages home page URL
         private string _homePageURL = DefaultHomePage;
@@ -64,7 +65,7 @@ namespace SimpleBrowser
         {
             // methods called on load
             UpdateNavigationButtonsState();
-            // browserHistory.LoadHistory();
+            SetBulkFilePath();
             _homePageURL = LoadHomePageUrlFromFile();
             if (browserNotebook != null)
             {
@@ -726,12 +727,45 @@ namespace SimpleBrowser
             return string.Empty;
         }
 
-        public async Task BulkDownload(string filename = "bulk.txt")
+        private void SetBulkFilePath()
         {
+            string appFolder;
+            string appName = System.IO.Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
+
+            // Determine the folder based on the operating system
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                appFolder = System.IO.Path.Combine(appDataFolder, appName);
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                string libraryFolder = System.IO.Path.Combine(homeFolder, "Library");
+                appFolder = System.IO.Path.Combine(libraryFolder, "Application Support", appName);
+            }
+            else
+            {
+                // For Linux and other OS
+                string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                appFolder = System.IO.Path.Combine(homeFolder, "." + appName);
+            }
+
+            // Ensure the directory exists
+            Directory.CreateDirectory(appFolder);
+
+            // Set the full path for bulk.txt
+            bulkFilePath = System.IO.Path.Combine(appFolder, "bulk.txt");
+        }
+
+
+        public async Task BulkDownload(string? filename = null)
+        {
+            string FilePath = filename ?? bulkFilePath ?? "bulk.txt";
             try
             {
                 // read the urls from the file
-                var urls = GetUrlsFromFile(filename);
+                var urls = GetUrlsFromFile(FilePath);
                 StringBuilder allResults = new();
 
                 foreach (var url in urls)
