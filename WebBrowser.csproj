@@ -12,7 +12,13 @@
   </ItemGroup>
 
   <ItemGroup>
-  <EmbeddedResource Include="browserGUI.glade" />
+    <EmbeddedResource Include="browserGUI.glade" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="GTKLibraries\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 
