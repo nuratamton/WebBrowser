@@ -632,10 +632,10 @@ namespace SimpleBrowser
                     // show dialog with those values as default
                     var (newName, newURL) = ShowEditFavDialog(favName, favURL);
 
-                    if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newURL))
+                    if (!string.IsNullOrEmpty(newName) && !string.IsNullOrEmpty(newURL) && HtmlUtility.IsValidUrl(newURL))
                     {
                         // updating the existing item in file
-                        Favourite existingFav = new Favourite { Name = favName, URL = favURL };
+                        Favourite existingFav = new() { Name = favName, URL = favURL };
                         favouriteManager.ModifyFavourite(newName, newURL, existingFav);
                         // update in treeview
                         favouriteStore.SetValue(iter, 0, newName);
@@ -763,7 +763,6 @@ namespace SimpleBrowser
                 File.WriteAllText(bulkFilePath, defaultLinks);
             }
         }
-
 
         public async Task BulkDownload(string? filename = null)
         {
@@ -986,20 +985,29 @@ namespace SimpleBrowser
                 Console.WriteLine("No URL available to add to favourites.");
                 return;
             }
-            string favouriteName = promptForFavouriteName();
 
-            // Create a new favourite item
-            var favouriteItem = new Favourite()
+            if (HtmlUtility.IsValidUrl(addressEntry.Text))
             {
-                Name = favouriteName,
-                URL = addressEntry.Text
-            };
+                string favouriteName = promptForFavouriteName();
 
-            // Add to favourites and save
-            favouriteManager.AddFavourite(favouriteItem);
+                // Create a new favourite item
+                var favouriteItem = new Favourite()
+                {
+                    Name = favouriteName,
+                    URL = addressEntry.Text
+                };
 
-            List<Favourite> favList = favouriteManager.DisplayFavourites();
-            FavouriteStorage.SaveFavorites(favList);
+                // Add to favourites and save
+                favouriteManager.AddFavourite(favouriteItem);
+
+                List<Favourite> favList = favouriteManager.DisplayFavourites();
+                FavouriteStorage.SaveFavorites(favList);
+            }
+            else
+            {
+                Console.WriteLine("Invalid URL");
+            }
+
         }
     }
 

@@ -131,7 +131,7 @@ namespace favourites
             favouriteList.RemoveAll(fav => fav.Name == item.Name && fav.URL == item.URL);
             // save the updated list
             FavouriteStorage.SaveFavorites(favouriteList);
-        }
+        } 
 
         // a method to modify an existing item
         public void ModifyFavourite(string name, string url, Favourite item)

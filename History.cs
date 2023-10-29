@@ -111,6 +111,7 @@ namespace BrowserHistory
             // var orderedHistory = allHistory.ToList();
             return allHistory.ToList();
         }
+
         private void SetHistoryFilePath()
         {
             string appFolder;
@@ -144,8 +145,8 @@ namespace BrowserHistory
             {
                 // Retrieves all Urls into a list
                 List<string> historyList = GetAllHistoryUrls();
-                
-                using StreamWriter sw = new(historyFilePath);
+
+                using StreamWriter sw = new(historyFilePath ?? "history.txt");
                 // each URL in list is added to the file
                 foreach (var item in historyList)
                 {
