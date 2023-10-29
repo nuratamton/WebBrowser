@@ -409,6 +409,12 @@ namespace SimpleBrowser
                 // Read and return the URL from the file
                 return File.ReadAllText(HomePageFilePath).Trim();
             }
+            else
+            {
+                string defaultLink = "http://www.hw.ac.uk";
+                // Create an empty file
+                File.WriteAllText(HomePageFilePath, defaultLink);
+            }
             return DefaultHomePage;
         }
 
